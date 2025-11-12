@@ -1,7 +1,7 @@
 // Simple Express server to act as a proxy for the Steam API
 // This is used for local development to get around CORS issues.
-import express from 'express';
-import axios from 'axios';
+const express = require('express');
+const axios = require('axios');
 
 const app = express();
 const port = 3001;
