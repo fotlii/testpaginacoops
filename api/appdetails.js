@@ -1,4 +1,3 @@
-
 const axios = require('axios');
 
 const STEAM_API_BASE_URL = 'https://store.steampowered.com/api';
@@ -6,9 +5,10 @@ const STEAM_API_BASE_URL = 'https://store.steampowered.com/api';
 // Exportamos una función que Vercel ejecutará por cada petición
 module.exports = async (req, res) => {
   try {
-    // La URL de la petición original ya incluye los parámetros
-    const queryString = req.url.split('?')[1] || '';
-    const steamApiUrl = `${STEAM_API_BASE_URL}/appdetails?${queryString}`;
+    // Usamos req.query, que es un objeto parseado, y lo reconstruimos.
+    // Es más robusto que parsear req.url manualmente.
+    const params = new URLSearchParams(req.query).toString();
+    const steamApiUrl = `${STEAM_API_BASE_URL}/appdetails?${params}`;
 
     console.log(`[Vercel Function] Forwarding request to: ${steamApiUrl}`);
 
