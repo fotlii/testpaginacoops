@@ -43,8 +43,7 @@ const transformApiDataToGame = (apiData: any): Game | null => {
 export const steamService = {
   getGames: async (): Promise<Game[]> => {
     console.log("Fetching curated list of games via backend proxy...");
-    // FIX: Explicitly type uniqueAppIds as number[] to resolve TypeScript inference issue.
-    const uniqueAppIds: number[] = [...new Set(recommendedAppIds)];
+    const uniqueAppIds = [...new Set(recommendedAppIds)];
     return await steamService.getGamesByIds(uniqueAppIds);
   },
 
