@@ -4,16 +4,5 @@
       "source": "/api/searchgames",
       "destination": "/api/searchgames"
     }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://cdn.akamai.steamstatic.com; connect-src 'self' https://*.steamstatic.com https://*.steampowered.com https://cors-anywhere.herokuapp.com;"
-        }
-      ]
-    }
   ]
 }

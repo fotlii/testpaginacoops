@@ -30,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ filters, setFilters, searchTer
       <div>
         <div className="relative">
             <input 
+                id="search-title"
                 type="text"
                 placeholder="Buscar por título..."
                 value={searchTerm}
