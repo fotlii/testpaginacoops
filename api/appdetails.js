@@ -4,23 +4,14 @@ const STEAM_API_BASE_URL = 'https://store.steampowered.com/api';
 
 module.exports = async (req, res) => {
   try {
-    // Extract the appids parameter directly from req.query
-    const { appids, ...otherParams } = req.query;
+    const { appids, l = 'english' } = req.query;
     
     if (!appids) {
       return res.status(400).json({ error: 'Missing appids parameter' });
     }
 
-    // Construct the Steam API URL properly
-    const steamParams = new URLSearchParams();
-    steamParams.append('appids', appids);
-    
-    // Add any other parameters (like l for language)
-    Object.keys(otherParams).forEach(key => {
-      steamParams.append(key, otherParams[key]);
-    });
-
-    const steamApiUrl = `${STEAM_API_BASE_URL}/appdetails?${steamParams.toString()}`;
+    // Construct URL manually to ensure proper format
+    const steamApiUrl = `${STEAM_API_BASE_URL}/appdetails?appids=${appids}&l=${l}`;
 
     console.log(`[Vercel Function] Forwarding request to: ${steamApiUrl}`);
 
@@ -30,22 +21,15 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'application/json');
     
-    // Send the Steam response back
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('[Vercel Function] Error fetching from Steam API:', error.message);
+    console.error('[Vercel Function] Error:', error.message);
     
-    // Set CORS headers for error responses too
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Content-Type', 'application/json');
     
     if (error.response) {
-      res.status(error.response.status).json({ 
-        error: 'Steam API Error', 
-        message: error.message,
-        steamStatus: error.response.status,
-        steamData: error.response.data 
-      });
+      res.status(error.response.status).json(error.response.data);
     } else {
       res.status(500).json({ 
         error: 'Internal Server Error', 
