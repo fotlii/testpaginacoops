@@ -2,6 +2,7 @@
 // This is used for local development to get around CORS issues.
 const express = require('express');
 const axios = require('axios');
+const featuredCoopHandler = require('./api/featuredcoop.js');
 
 const app = express();
 const port = 3001;
@@ -26,6 +27,9 @@ app.get('/api/appdetails', async (req, res) => {
     }
   }
 });
+
+// Add the new route for featured co-op games
+app.get('/api/featuredcoop', featuredCoopHandler);
 
 app.listen(port, () => {
   console.log(`[Proxy Server] Running on http://localhost:${port}`);

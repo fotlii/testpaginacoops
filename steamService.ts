@@ -1,5 +1,6 @@
-import { Game, GamePrice } from '../types';
-import { recommendedAppIds } from './mockData';
+import { Game, GamePrice } from './types';
+// FIX: Corrected import path for mockData.
+import { recommendedAppIds } from './services/mockData';
 
 // La URL base de la API ahora apunta a nuestro propio proxy backend
 const API_BASE_URL = '/api';
@@ -55,8 +56,8 @@ const transformApiDataToGame = (apiData: any): Game | null => {
 export const steamService = {
   getGames: async (): Promise<Game[]> => {
     console.log("Fetching curated list of games via backend proxy...");
-    // FIX: Ensure that `recommendedAppIds` only contains numbers to prevent type errors.
-    const uniqueAppIds: number[] = [...new Set(recommendedAppIds.filter((id): id is number => typeof id === 'number'))];
+    // FIX: With typed mock data, we can now safely get unique IDs without filtering.
+    const uniqueAppIds: number[] = [...new Set(recommendedAppIds)];
     return await steamService.getGamesByIds(uniqueAppIds);
   },
 
