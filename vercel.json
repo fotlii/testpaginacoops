@@ -1,1 +1,12 @@
-full contents of vercel.json
+{
+  "rewrites": [
+    {
+      "source": "/api/searchgames",
+      "destination": "/api/searchgames.js"
+    },
+    {
+      "source": "/api/appdetails",
+      "destination": "/api/appdetails.js"
+    }
+  ]
+}
