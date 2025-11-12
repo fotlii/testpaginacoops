@@ -81,8 +81,9 @@ export const steamService = {
         const chunk = appIds.slice(i, i + CHUNK_SIZE);
         console.log(`Fetching batch: ${chunk.join(',')}`);
 
-        // With a stable backend proxy, we can safely re-add localization to batch requests
-        const apiUrl = `${API_BASE_URL}/appdetails?appids=${chunk.join(',')}&cc=es&l=spanish`;
+        // The Steam API for multiple appids is unstable with localization params.
+        // We remove them here to prevent 400 errors. Localization is kept for single game fetches.
+        const apiUrl = `${API_BASE_URL}/appdetails?appids=${chunk.join(',')}`;
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
