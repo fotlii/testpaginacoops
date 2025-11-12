@@ -1,4 +1,7 @@
+// FIX: Corrected import path for types.ts, which is in the parent directory.
 import { Game, GamePrice } from '../types';
+// FIX: Corrected import path for mockData.ts, which is in the same directory.
+import { recommendedAppIds } from './mockData';
 
 // La URL base de la API ahora apunta a nuestro propio proxy backend
 const API_BASE_URL = '/api';
@@ -37,11 +40,11 @@ const transformApiDataToGame = (apiData: any): Game | null => {
   }
 
   return {
-    appId: apiData.steam_appid || apiData.id,
+    appId: apiData.steam_appid,
     title: apiData.name,
-    coverUrl: apiData.header_image || apiData.large_capsule_image,
+    coverUrl: apiData.header_image,
     price,
-    shortDescription: apiData.short_description || '',
+    shortDescription: apiData.short_description,
     longDescription: apiData.detailed_description?.replace(/<[^>]*>?/gm, '') || '',
     screenshots: apiData.screenshots?.map((ss: any) => ss.path_full) || [],
     movies: apiData.movies || [],
@@ -53,29 +56,10 @@ const transformApiDataToGame = (apiData: any): Game | null => {
 
 export const steamService = {
   getGames: async (): Promise<Game[]> => {
-    console.log("Fetching featured co-op games via backend proxy...");
-    try {
-        const apiUrl = `${API_BASE_URL}/featuredcoop`;
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        
-        if (data.success && Array.isArray(data.games)) {
-             const transformedGames = data.games
-                .map(transformApiDataToGame)
-                .filter((game): game is Game => game !== null);
-            console.log(`Successfully fetched and transformed ${transformedGames.length} featured games.`);
-            return transformedGames;
-        }
-        return [];
-
-    } catch (error) {
-       console.error(`Failed to fetch featured games:`, error);
-       throw error;
-    }
+    console.log("Fetching curated list of games via backend proxy...");
+    // With typed mock data, we can now safely get unique IDs without filtering.
+    const uniqueAppIds: number[] = [...new Set(recommendedAppIds)];
+    return await steamService.getGamesByIds(uniqueAppIds);
   },
 
   getGameById: async (appId: number): Promise<Game | undefined> => {
