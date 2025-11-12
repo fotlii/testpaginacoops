@@ -25,6 +25,18 @@ const transformApiDataToGame = (apiData: any): Game | null => {
     tags.push(...apiData.genres.map((gen: any) => gen.description));
   }
 
+  const dateString = apiData.release_date?.date;
+  let releaseDateISO = new Date(0).toISOString(); // Default to Epoch time if date is invalid
+
+  // The Date constructor can be unreliable with Steam's date format.
+  // We'll validate the created date before using it to prevent crashes.
+  if (dateString) {
+    const date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+      releaseDateISO = date.toISOString();
+    }
+  }
+
   return {
     appId: apiData.steam_appid,
     title: apiData.name,
@@ -36,14 +48,14 @@ const transformApiDataToGame = (apiData: any): Game | null => {
     movies: apiData.movies || [],
     tags: tags.slice(0, 10), // Limit tags to a reasonable number
     genres: apiData.genres || [],
-    releaseDate: apiData.release_date?.date ? new Date(apiData.release_date.date).toISOString() : new Date().toISOString(),
+    releaseDate: releaseDateISO,
   };
 };
 
 export const steamService = {
   getGames: async (): Promise<Game[]> => {
     console.log("Fetching curated list of games via backend proxy...");
-    const uniqueAppIds = [...new Set(recommendedAppIds)];
+    const uniqueAppIds: number[] = [...new Set(recommendedAppIds)];
     return await steamService.getGamesByIds(uniqueAppIds);
   },
 
@@ -81,8 +93,9 @@ export const steamService = {
         const chunk = appIds.slice(i, i + CHUNK_SIZE);
         console.log(`Fetching batch: ${chunk.join(',')}`);
 
-        // With a stable backend proxy, we can now safely add localization to batch requests
-        const apiUrl = `${API_BASE_URL}/appdetails?appids=${chunk.join(',')}&cc=es&l=spanish`;
+        // IMPORTANT: The Steam batch endpoint is unstable and often returns 400 with localization.
+        // We remove cc and l parameters here for stability. The detail page remains localized.
+        const apiUrl = `${API_BASE_URL}/appdetails?appids=${chunk.join(',')}`;
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
