@@ -1,9 +1,12 @@
-
 {
   "rewrites": [
     {
       "source": "/api/appdetails",
       "destination": "/api/appdetails.js"
+    },
+    {
+      "source": "/api/featuredcoop",
+      "destination": "/api/featuredcoop.js"
     }
   ]
 }

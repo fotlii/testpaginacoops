@@ -1,5 +1,4 @@
 import { Game, GamePrice } from '../types';
-import { recommendedAppIds } from './mockData';
 
 // La URL base de la API ahora apunta a nuestro propio proxy backend
 const API_BASE_URL = '/api';
@@ -25,27 +24,58 @@ const transformApiDataToGame = (apiData: any): Game | null => {
     tags.push(...apiData.genres.map((gen: any) => gen.description));
   }
 
+  const dateString = apiData.release_date?.date;
+  let releaseDateISO = new Date(0).toISOString(); // Default to Epoch time if date is invalid
+
+  // The Date constructor can be unreliable with Steam's date format.
+  // We'll validate the created date before using it to prevent crashes.
+  if (dateString) {
+    const date = new Date(dateString);
+    if (!isNaN(date.getTime())) {
+      releaseDateISO = date.toISOString();
+    }
+  }
+
   return {
-    appId: apiData.steam_appid,
+    appId: apiData.steam_appid || apiData.id,
     title: apiData.name,
-    coverUrl: apiData.header_image,
+    coverUrl: apiData.header_image || apiData.large_capsule_image,
     price,
-    shortDescription: apiData.short_description,
+    shortDescription: apiData.short_description || '',
     longDescription: apiData.detailed_description?.replace(/<[^>]*>?/gm, '') || '',
     screenshots: apiData.screenshots?.map((ss: any) => ss.path_full) || [],
     movies: apiData.movies || [],
     tags: tags.slice(0, 10), // Limit tags to a reasonable number
     genres: apiData.genres || [],
-    releaseDate: apiData.release_date?.date ? new Date(apiData.release_date.date).toISOString() : new Date().toISOString(),
+    releaseDate: releaseDateISO,
   };
 };
 
 export const steamService = {
   getGames: async (): Promise<Game[]> => {
-    console.log("Fetching curated list of games via backend proxy...");
-    // FIX: Explicitly type uniqueAppIds as number[] to resolve TypeScript inference issue.
-    const uniqueAppIds: number[] = [...new Set(recommendedAppIds)];
-    return await steamService.getGamesByIds(uniqueAppIds);
+    console.log("Fetching featured co-op games via backend proxy...");
+    try {
+        const apiUrl = `${API_BASE_URL}/featuredcoop`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.games)) {
+             const transformedGames = data.games
+                .map(transformApiDataToGame)
+                .filter((game): game is Game => game !== null);
+            console.log(`Successfully fetched and transformed ${transformedGames.length} featured games.`);
+            return transformedGames;
+        }
+        return [];
+
+    } catch (error) {
+       console.error(`Failed to fetch featured games:`, error);
+       throw error;
+    }
   },
 
   getGameById: async (appId: number): Promise<Game | undefined> => {
@@ -82,8 +112,9 @@ export const steamService = {
         const chunk = appIds.slice(i, i + CHUNK_SIZE);
         console.log(`Fetching batch: ${chunk.join(',')}`);
 
-        // With a stable backend proxy, we can now safely add localization to batch requests
-        const apiUrl = `${API_BASE_URL}/appdetails?appids=${chunk.join(',')}&cc=es&l=spanish`;
+        // IMPORTANT: The Steam batch endpoint is unstable and often returns 400 with localization.
+        // We remove cc and l parameters here for stability. The detail page remains localized.
+        const apiUrl = `${API_BASE_URL}/appdetails?appids=${chunk.join(',')}`;
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
