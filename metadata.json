@@ -1,0 +1,5 @@
+{
+  "name": "Recomendador de Juegos Steam",
+  "description": "Una aplicación web responsive que recomienda juegos de Steam con tags específicos (Cooperativo Local, Compatible con Mando, Roguelike/Roguelite) y permite al usuario gestionar listas de juegos favoritos, jugados y descartados.",
+  "requestFramePermissions": []
+}

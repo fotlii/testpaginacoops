@@ -1,0 +1,9 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/api/appdetails",
+      "destination": "/api/appdetails.js"
+    }
+  ]
+}
